@@ -15,7 +15,8 @@
   .bar { display:flex; height:5px; position:absolute; left:0; right:0; bottom:0; }
   .bar i:nth-child(1){flex:2;background:var(--azul)} .bar i:nth-child(2){flex:1;background:var(--verde)} .bar i:nth-child(3){flex:1;background:var(--azul-claro)}
   main { max-width:1080px; margin:0 auto; padding:28px 20px 48px; display:grid; grid-template-columns: 360px 1fr; gap:24px; }
-  @media (max-width: 860px){ main{ grid-template-columns:1fr; } }
+  @media (max-width: 860px){ main{ grid-template-columns:minmax(0,1fr); } }
+  .card { min-width:0; }
   .card { background:#fff; border-radius:12px; padding:22px; box-shadow:0 1px 3px rgba(16,33,70,.08); }
   h2 { font-size:15px; margin:0 0 14px; color:var(--azul); text-transform:uppercase; letter-spacing:.06em; }
   label { display:block; font-size:13px; font-weight:bold; margin:12px 0 5px; }
