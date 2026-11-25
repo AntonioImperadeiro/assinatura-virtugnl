@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gerador de Assinatura de E-mail — VirtuGNL</title>
+<style>
+  :root { --azul:#2E53A1; --verde:#00C476; --azul-claro:#6999FF; --grafite:#1C2535; --navy:#0E2146; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Arial, Helvetica, sans-serif; color: var(--grafite); background:#F3F6FB; }
+  header { background: linear-gradient(135deg,#142C58,#0B1B3A); color:#fff; padding:28px 32px 24px; position:relative; }
+  header img { height:40px; display:block; }
+  header h1 { margin:18px 0 4px; font-size:22px; }
+  header p { margin:0; color:#C9D6F2; font-size:14px; }
+  .bar { display:flex; height:5px; position:absolute; left:0; right:0; bottom:0; }
+  .bar i:nth-child(1){flex:2;background:var(--azul)} .bar i:nth-child(2){flex:1;background:var(--verde)} .bar i:nth-child(3){flex:1;background:var(--azul-claro)}
+  main { max-width:1080px; margin:0 auto; padding:28px 20px 48px; display:grid; grid-template-columns: 360px 1fr; gap:24px; }
+  @media (max-width: 860px){ main{ grid-template-columns:1fr; } }
+  .card { background:#fff; border-radius:12px; padding:22px; box-shadow:0 1px 3px rgba(16,33,70,.08); }
+  h2 { font-size:15px; margin:0 0 14px; color:var(--azul); text-transform:uppercase; letter-spacing:.06em; }
+  label { display:block; font-size:13px; font-weight:bold; margin:12px 0 5px; }
+  label small { font-weight:normal; color:#6B7486; }
+  input[type=text], input[type=email] { width:100%; padding:10px 12px; border:1px solid #CBD3E1; border-radius:8px; font-size:14px; font-family:inherit; }
+  input:focus { outline:2px solid var(--azul-claro); border-color:var(--azul-claro); }
+  .check { display:flex; gap:8px; align-items:center; font-weight:normal; margin-top:14px; }
+  .preview { border:1px dashed #CBD3E1; border-radius:10px; padding:24px; background:#fff; overflow:auto; }
+  .preview.dark { background:#1F1F1F; }
+  .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+  button { font-family:inherit; font-size:14px; font-weight:bold; padding:11px 18px; border-radius:8px; border:0; cursor:pointer; }
+  .primary { background:var(--azul); color:#fff; } .primary:hover{ background:#24468C; }
+  .secondary { background:#E8EEF9; color:var(--azul); }
+  .msg { font-size:13px; color:#0A7A4D; margin-top:10px; min-height:18px; }
+  ol { padding-left:20px; font-size:14px; line-height:1.55; } ol li { margin-bottom:6px; }
+  .tabs { display:flex; gap:8px; margin-bottom:12px; }
+  .tabs button { padding:7px 12px; font-size:12px; }
+  .tabs .on { background:var(--grafite); color:#fff; }
+  .note { font-size:12px; color:#6B7486; margin-top:14px; line-height:1.5; }
+</style>
+</head>
+<body>
+<header>
+  <img src="logo-cabecalho.png" alt="VirtuGNL">
+  <h1>Gerador de assinatura de e-mail</h1>
+  <p>Preencha seus dados, confira a prévia e copie a assinatura para o Outlook.</p>
+  <div class="bar"><i></i><i></i><i></i></div>
+</header>
+<main>
+  <section class="card">
+    <h2>Seus dados</h2>
+    <label for="nome">Nome completo</label>
+    <input type="text" id="nome" placeholder="Ex.: Maria da Silva">
+    <label for="cargo">Cargo</label>
+    <input type="text" id="cargo" placeholder="Ex.: Analista de Logística">
+    <label for="depto">Departamento <small>(opcional)</small></label>
+    <input type="text" id="depto" placeholder="Ex.: Operações">
+    <label for="email">E-mail corporativo</label>
+    <input type="email" id="email" placeholder="nome.sobrenome@virtugnl.com">
+    <label class="check"><input type="checkbox" id="usaTel" checked> Incluir telefone</label>
+    <div id="telBox">
+      <label for="tel">Telefone corporativo</label>
+      <input type="text" id="tel" placeholder="+55 (00) 0000-0000">
+    </div>
+    <label for="end">Endereço</label>
+    <input type="text" id="end" value="Av. Brigadeiro Luís Antônio, 1343 – 14º andar | São Paulo – SP | CEP 01317-001">
+    <label for="linkUrl">Link institucional autorizado <small>(opcional)</small></label>
+    <input type="text" id="linkUrl" placeholder="https://...">
+    <p class="note">Use apenas links aprovados pela empresa. O site institucional (virtugnl.com) já está incluído.</p>
+  </section>
+
+  <section>
+    <div class="card">
+      <h2>Prévia</h2>
+      <div class="tabs">
+        <button class="on" id="tLight" type="button">Modo claro</button>
+        <button id="tDark" type="button">Simulação modo escuro</button>
+      </div>
+      <div class="preview" id="preview"></div>
+      <div class="actions">
+        <button class="primary" id="copy" type="button">Copiar assinatura</button>
+        <button class="secondary" id="dl" type="button">Baixar arquivo HTML</button>
+      </div>
+      <div class="msg" id="msg" role="status"></div>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <h2>Como instalar no Outlook</h2>
+      <ol>
+        <li>Clique em <b>Copiar assinatura</b>.</li>
+        <li><b>Outlook novo / Outlook na web:</b> Configurações (engrenagem) › Contas › Assinaturas › Nova assinatura.<br>
+            <b>Outlook clássico:</b> Arquivo › Opções › Email › Assinaturas › Novo.</li>
+        <li>Dê o nome <i>VirtuGNL</i>, clique na caixa de edição e cole com <b>Ctrl+V</b>.</li>
+        <li>Defina-a como padrão para <b>novas mensagens</b> e para <b>respostas/encaminhamentos</b>. Salve.</li>
+        <li>Envie um e-mail de teste para você mesmo e confira o logotipo e os links.</li>
+      </ol>
+      <p class="note">Não altere cores, fontes, tamanho ou posição do logotipo. Em caso de dúvida, escreva para marketing@virtugnl.com.</p>
+    </div>
+  </section>
+</main>
+<script>
+const LOGO = "https://antonioimperadeiro.github.io/assinatura-virtugnl/logo-assinatura.png";
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function row(lab, val){
+  return '<tr><td style="padding:0 8px 2px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:17px;font-weight:bold;color:#2E53A1;white-space:nowrap;vertical-align:top;">'+lab+'</td>'
+       + '<td style="padding:0 0 2px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:17px;color:#3A4557;">'+val+'</td></tr>';
+}
+function build(){
+  const nome = $('nome').value.trim() || '[Nome completo]';
+  const cargo = $('cargo').value.trim() || '[Cargo]';
+  const depto = $('depto').value.trim();
+  const email = $('email').value.trim() || 'nome.sobrenome@virtugnl.com';
+  const usaTel = $('usaTel').checked;
+  const tel = $('tel').value.trim();
+  const link = $('linkUrl').value.trim();
+  const end = $('end').value.trim();
+  const a = (href, txt) => '<a href="'+esc(href)+'" style="color:#3A4557;text-decoration:none;">'+esc(txt)+'</a>';
+  let rows = row('E-mail', a('mailto:'+email, email));
+  if (usaTel && tel) rows += row('Tel.', a('tel:'+tel.replace(/[^\d+]/g,''), tel));
+  rows += row('Site', a('https://virtugnl.com', 'virtugnl.com'));
+  if (end) { const i = end.indexOf(' | '); rows += row('End.', i < 0 ? esc(end) : esc(end.slice(0, i)) + '<br>' + esc(end.slice(i + 3))); }
+  if (link) rows += row('Link', a(link, link.replace(/^https?:\/\/(www\.)?/,'')));
+  const cargoLine = esc(cargo) + (depto ? ' <span style="color:#9AA3B2;">|</span> '+esc(depto) : '');
+  return '<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;">'
+   + '<tr><td style="padding:0 12px 0 0;vertical-align:middle;border-right:2px solid #00C476;">'
+   + '<a href="https://virtugnl.com" style="text-decoration:none;"><img src="'+LOGO+'" width="149" height="54" alt="VirtuGNL" style="display:block;border:0;outline:none;width:149px;height:54px;"></a></td>'
+   + '<td style="padding:0 0 0 16px;vertical-align:middle;">'
+   + '<p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:20px;font-weight:bold;color:#1C2535;">'+esc(nome)+'</p>'
+   + '<p style="margin:0 0 8px 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:18px;color:#2E53A1;">'+cargoLine+'</p>'
+   + '<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;">'+rows+'</table>'
+   + '</td></tr>'
+   + '<tr><td colspan="2" style="padding:12px 0 0 0;"><table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%" style="border-collapse:collapse;width:100%;max-width:440px;"><tr>'
+   + '<td width="50%" height="3" bgcolor="#2E53A1" style="font-size:0;line-height:0;height:3px;background:#2E53A1;">&nbsp;</td>'
+   + '<td width="25%" height="3" bgcolor="#00C476" style="font-size:0;line-height:0;height:3px;background:#00C476;">&nbsp;</td>'
+   + '<td width="25%" height="3" bgcolor="#6999FF" style="font-size:0;line-height:0;height:3px;background:#6999FF;">&nbsp;</td>'
+   + '</tr></table></td></tr></table>';
+}
+function render(){
+  $('telBox').style.display = $('usaTel').checked ? '' : 'none';
+  $('preview').innerHTML = build();
+  if ($('preview').classList.contains('dark')) darkSim();
+}
+function darkSim(){
+  // Simulação aproximada: clientes de e-mail clareiam textos escuros no modo escuro.
+  $('preview').querySelectorAll('p,td,a').forEach(el => {
+    const c = getComputedStyle(el).color;
+    if (c === 'rgb(28, 37, 53)' || c === 'rgb(58, 69, 87)') el.style.color = '#E6E9EF';
+    if (c === 'rgb(46, 83, 161)') el.style.color = '#8FB0FF';
+  });
+}
+['nome','cargo','depto','email','tel','end','linkUrl','usaTel'].forEach(id => $(id).addEventListener('input', render));
+$('tLight').onclick = () => { $('preview').classList.remove('dark'); $('tLight').classList.add('on'); $('tDark').classList.remove('on'); render(); };
+$('tDark').onclick = () => { $('preview').classList.add('dark'); $('tDark').classList.add('on'); $('tLight').classList.remove('on'); render(); };
+
+$('copy').onclick = async () => {
+  const htmlStr = build();
+  try {
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([htmlStr], {type:'text/html'}),
+      'text/plain': new Blob([$('preview').innerText], {type:'text/plain'})
+    })]);
+    $('msg').textContent = 'Assinatura copiada. Cole no editor de assinaturas do Outlook com Ctrl+V.';
+  } catch (e) {
+    // alternativa: seleção manual do conteúdo renderizado
+    const tmp = document.createElement('div'); tmp.innerHTML = htmlStr; tmp.style.position='fixed'; tmp.style.left='-9999px';
+    document.body.appendChild(tmp);
+    const r = document.createRange(); r.selectNodeContents(tmp);
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    const ok = document.execCommand('copy'); s.removeAllRanges(); tmp.remove();
+    $('msg').textContent = ok ? 'Assinatura copiada. Cole no Outlook com Ctrl+V.' : 'Não foi possível copiar automaticamente. Selecione a prévia com o mouse e use Ctrl+C.';
+  }
+};
+$('dl').onclick = () => {
+  const doc = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Assinatura VirtuGNL</title></head><body>'+build()+'</body></html>';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([doc], {type:'text/html'}));
+  a.download = 'VIRTU_GNL_ASSINATURA_' + ($('nome').value.trim().split(/\s+/).join('_').toUpperCase() || 'COLABORADOR') + '.html';
+  a.click();
+};
+render();
+</script>
+</body>
+</html>
