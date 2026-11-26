@@ -62,7 +62,7 @@
       <input type="text" id="tel" placeholder="+55 (00) 0000-0000">
     </div>
     <label for="end">Endereço</label>
-    <input type="text" id="end" value="Av. Brigadeiro Luís Antônio, 1343 – 14º andar | São Paulo – SP | CEP 01317-001">
+    <input type="text" id="end" value="Av. Brigadeiro Luís Antônio, 1343 – 14º andar | Edif. Margarida Igel | São Paulo – SP | CEP 01317-001">
     <label for="linkUrl">Link institucional autorizado <small>(opcional)</small></label>
     <input type="text" id="linkUrl" placeholder="https://...">
     <p class="note">Use apenas links aprovados pela empresa. O site institucional (virtugnl.com) já está incluído.</p>
@@ -118,7 +118,7 @@ function build(){
   let rows = row('E-mail', a('mailto:'+email, email));
   if (usaTel && tel) rows += row('Tel.', a('tel:'+tel.replace(/[^\d+]/g,''), tel));
   rows += row('Site', a('https://virtugnl.com', 'virtugnl.com'));
-  if (end) { const i = end.indexOf(' | '); rows += row('End.', i < 0 ? esc(end) : esc(end.slice(0, i)) + '<br>' + esc(end.slice(i + 3))); }
+  if (end) { const p = end.split(' | ').map(s => s.trim()).filter(Boolean); const lines = p.length > 3 ? [p[0], p[1], p.slice(2).join(' | ')] : p.length > 1 ? [p[0], p.slice(1).join(' | ')] : p; rows += row('End.', lines.map(esc).join('<br>')); }
   if (link) rows += row('Link', a(link, link.replace(/^https?:\/\/(www\.)?/,'')));
   const cargoLine = esc(cargo) + (depto ? ' <span style="color:#9AA3B2;">|</span> '+esc(depto) : '');
   return '<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;">'
